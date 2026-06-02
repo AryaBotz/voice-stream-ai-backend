@@ -1,11 +1,15 @@
-import { runSTT } from "../stt/stt.service.js";
-import { runLLM } from "../llm/llm.service.js";
+import { decodeAudio } from "./audio/decoder.js";
+import { runSTT } from "./stt/stt.service.js";
+import { runLLM } from "./llm/llm.service.js";
 
-export async function processAudio(audio) {
-  const text = await runSTT(audio);
+export async function handleAudio(base64Audio) {
+  // 1. decode WebM → WAV/PCM
+  const wavBuffer = await decodeAudio(base64Audio);
 
-  if (!text) return "no speech";
+  // 2. STT (Groq Whisper)
+  const text = await runSTT(wavBuffer);
 
+  // 3. LLM response
   const reply = await runLLM(text);
 
   return reply;

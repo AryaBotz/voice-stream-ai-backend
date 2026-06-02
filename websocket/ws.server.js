@@ -1,17 +1,22 @@
 import { WebSocketServer } from "ws";
-import { handleMessage } from "./ws.router.js";
+import { handleAudio } from "../voice.pipeline.js";
 
 export function initWebSocket(server) {
   const wss = new WebSocketServer({ server });
 
   wss.on("connection", (ws) => {
-    ws.sessionId = "sess_" + Math.random().toString(36).slice(2, 8);
+    ws.on("message", async (msg) => {
+      const data = JSON.parse(msg.toString());
 
-    ws.on("message", (data) => handleMessage(ws, data));
+      if (data.type === "audio") {
+        const response = await handleAudio(data.data);
+        ws.send(JSON.stringify({
+          type: "response",
+          text: response
+        }));
+      }
+    });
 
-    ws.send(JSON.stringify({
-      type: "connected",
-      sessionId: ws.sessionId
-    }));
+    ws.send(JSON.stringify({ type: "connected" }));
   });
 }

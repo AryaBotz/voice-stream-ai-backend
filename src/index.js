@@ -7,5 +7,5 @@ const server = createServer(app);
 initWebSocket(server);
 
 server.listen(3000, () => {
-  console.log("Server running");
+  console.log("Voice backend running");
 });

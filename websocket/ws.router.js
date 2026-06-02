@@ -1,6 +1,8 @@
-import { addAudioChunk } from "../audio/audio.buffer.js";
-
 export function handleMessage(ws, data) {
-  // audio binary masuk sini
-  addAudioChunk(ws.sessionId, data);
+  console.log("received audio chunk:", data.length);
+
+  ws.send(JSON.stringify({
+    type: "response",
+    text: "audio received ✔"
+  }));
 }

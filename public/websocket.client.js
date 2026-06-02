@@ -1,4 +1,4 @@
-const WS_URL = "wss://YOUR-RAILWAY-DOMAIN.up.railway.app";
+const WS_URL = "wss://voice-stream-ai-backend-production-b7f6.up.railway.app";
 
 export const ws = new WebSocket(WS_URL);
 

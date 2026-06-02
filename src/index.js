@@ -1,31 +1,13 @@
-import { createServer } from "http";
+import http from "http";
 import express from "express";
-import { WebSocketServer } from "ws";
+import { initWebSocket } from "./websocket/ws.server.js";
 
 const app = express();
+const server = http.createServer(app);
 
-app.get("/", (req, res) => {
-  res.json({ status: "ok" });
-});
+initWebSocket(server);
 
-const server = createServer(app);
-
-const wss = new WebSocketServer({ server });
-
-wss.on("connection", (ws) => {
-  console.log("Client connected");
-
-  ws.on("message", (msg) => {
-    console.log("received:", msg.toString());
-
-    // echo test dulu
-    ws.send("received audio chunk");
-  });
-
-  ws.send("connected to voice server");
-});
-
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 server.listen(PORT, () => {
   console.log("Server running on", PORT);

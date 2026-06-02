@@ -1,4 +1,4 @@
-const ws = new WebSocket("ws://localhost:3000");
+const ws = new WebSocket("ws://:voice-stream-ai-backend-production-b7f6.up.railway.app");
 
 ws.onopen = () => {
   console.log("connected");

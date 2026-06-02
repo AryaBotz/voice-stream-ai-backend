@@ -1,27 +1,37 @@
-import { encodeAudioChunk } from "./audio.encoder.js";
-import { ws } from "./websocket.client.js";
-
 let mediaRecorder;
-let stream;
+let chunks = [];
 
-export async function startMic() {
-  stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+export async function startRecording(ws) {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-  mediaRecorder = new MediaRecorder(stream);
+  mediaRecorder = new MediaRecorder(stream, {
+    mimeType: "audio/webm;codecs=opus"
+  });
 
-  mediaRecorder.ondataavailable = async (event) => {
-    if (event.data.size > 0 && ws.readyState === 1) {
-      const buffer = await event.data.arrayBuffer();
-      const encoded = encodeAudioChunk(buffer);
-
-      ws.send(encoded);
-    }
+  mediaRecorder.ondataavailable = (e) => {
+    chunks.push(e.data);
   };
 
-  mediaRecorder.start(250); // chunk 250ms
+  mediaRecorder.onstop = async () => {
+    const blob = new Blob(chunks, { type: "audio/webm" });
+    chunks = [];
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result.split(",")[1];
+
+      ws.send(JSON.stringify({
+        type: "audio",
+        data: base64
+      }));
+    };
+
+    reader.readAsDataURL(blob);
+  };
+
+  mediaRecorder.start();
 }
 
-export function stopMic() {
-  if (mediaRecorder) mediaRecorder.stop();
-  if (stream) stream.getTracks().forEach(t => t.stop());
+export function stopRecording() {
+  mediaRecorder.stop();
 }
